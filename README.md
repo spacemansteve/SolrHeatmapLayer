@@ -34,7 +34,7 @@ version hasn't even been tested.  It will within a week or two.
 
 This library will evolve to support both Leaflet and OpenLayers,
 perhaps in a Backbone framework.  Suggestions and questions are most
-welcome.
+welcome, I'm SpacemanSteve@gmail.com.
 
 This can be run on localhost using node server.js and going to
 http://localhost:8088/example.html.  
