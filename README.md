@@ -25,7 +25,14 @@ HeatmapSource and added to the HeatmapLayer.  The size of the
 HeatmapSource object in pixels is based on the grid size of the Solr
 data and the number of pixels on the map.
 
-This library borrowed some ideas from Jack Reed's library for Solr
+This code includes a quick and dirty area based filter query.  Layers
+that cover a large area tend to create a lot of background noise for
+the heatmap.  I expected this would all come out in the wash during
+classification, but it doesn't.  A reasonable area filter might
+eliminate layers that are larger than 25% of the area of the
+map.  
+
+This library borrowed ideas from Jack Reed's very nice library for Solr
 heatmaps with Leaflet.
 
 You can see a version of this code running at
@@ -34,7 +41,7 @@ version hasn't even been tested.  It will within a week or two.
 
 This library will evolve to support both Leaflet and OpenLayers,
 perhaps in a Backbone framework.  Suggestions and questions are most
-welcome.
+welcome, I'm SpacemanSteve@gmail.com.
 
 This can be run on localhost using node server.js and going to
 http://localhost:8088/example.html.  

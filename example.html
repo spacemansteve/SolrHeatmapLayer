@@ -9,10 +9,11 @@
     <script src="solrHeatmapLayer.js"></script> 
 
 <script type="text/javascript">
-jQuery(document).ready(function() {console.log('hey');initMap();});
+jQuery(document).ready(function() {initMap();});
   
 function initMap()
 {
+    // create OSM basemap and heatmap layer 
     map = new OpenLayers.Map(
         {
             div: "map",
@@ -21,15 +22,23 @@ function initMap()
             center: new OpenLayers.LonLat(0, 0),
             zoom: 1
 	});
+    // on map pan or zoom we have to send a new solr request
     map.events.register("moveend", map, function(){updateHeatmap(map)});
     map.events.register("zoomend", map, function(){updateHeatmap(map)});
-    //updateHeatmap(map);
+    // generate heatmap on page load
+    updateHeatmap(map);
 }
 
+
+
+// http://WorldWideGeoWeb.com has a solr index for over 170,000 kml files
+// SolrHeatmapLayer constructor parameters: map object, base url for solr instance, spatial data field name
+var solrHeatmapLayer = null;
 function updateHeatmap(map)
 {
-    //SolrHeatmapLayer.fetch(map, "http://worldwidegeoweb.com:8983/solr/kml/select?q*:*", "bbox_rpt");
-    //SolrHeatmapLayer.fetch(map, "http://dev.jdarchive.org:8983/solr/jda/select?q=*:*", "bbox_rpt");
+    if (!solrHeatmapLayer)
+	solrHeatmapLayer = new SolrHeatmapLayer(map, "http://worldwidegeoweb.com:8983/solr/kml/select?q*:*", "bbox_rpt");
+    solrHeatmapLayer.fetch();
 }
 </script>
 

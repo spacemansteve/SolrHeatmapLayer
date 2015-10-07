@@ -1,30 +1,33 @@
-var SolrHeatmapLayer = function(map)
+
+// constructor
+var SolrHeatmapLayer = function(map, solrBaseUrl, rptField)
 {
-    SoleHeatmapLayer.prototype.map = map;
+    this.map = map;
+    this.solrBaseUrl = solrBaseUrl;
+    this.rptField = rptField;
 };
 
-SolrHeatmapLayer.prototype.fetch = function(solrBaseUrl, rptField)
+// call after map pan/zoom to send a solr request and have response processed
+SolrHeatmapLayer.prototype.fetch = function()
 {
-    SolrHeatmapLayer.prototype.solrBaseUrl = solrBaseUrl;
-    SolrHeatmapLayer.prototype.rptField = rptField;
     //solrUrl = "http://localhost:8984/solr/jda/select?q=*:*";
     //solrUrl = "http://dev.jdarchive.org:8983/solr/jda/select?q=*:*";
     _this = this;
     jQuery.ajax({
-	url: solrUrl,
+	url: this.solrBaseUrl,
 	dataType: 'JSONP',
 	data: {
 	    q: '*:*',
 	    wt: 'json',
 	    facet: true,
-	    'facet.heatmap': "bbox_rpt",
+	    'facet.heatmap': this.rptField,
 	    'facet.heatmap.distErrPct': 0.1,
-	    'facet.heatmap.geom': this._mapViewToWkt(this.map),
-	    fq: "bbox_rpt"  + this._mapViewToEnvelope(this.map)
+	    'facet.heatmap.geom': this._mapViewToWkt(_this.map),
+	    fq: this.rptField  + this._mapViewToEnvelope(_this.map),
+	    fq: "Area:" + "[0 TO 10]"  // this needs to be an option
 	},
 	jsonp: 'json.wrf',
 	success: function(solrResponse) {
-	    console.log("solr response received");
 	    _this.processSolrResult(solrResponse);
 	}
     });
@@ -44,12 +47,14 @@ SolrHeatmapLayer.prototype.renderHeatmap = function(facetHeatmap, classification
     cellSize = this.getCellSize(facetHeatmap, this.map);
     var oldLayers = this.map.getLayersByName("Heatmap");
     if (oldLayers.length > 0)
-	this.map.removeLayer(oldLayers[0]);
+    {
+	jQuery.each(oldLayers, function(i, currentLayer){_this.map.removeLayer(currentLayer);});
+    }
     var heatmapLayer = new Heatmap.Layer("Heatmap");
     var colorGradient = this.getColorGradient(this.getColors(), classifications);
     heatmapLayer.setGradientStops(colorGradient);
 
-    var vargeodeticProjection = new OpenLayers.Projection("EPSG:4326");
+    var geodeticProjection = new OpenLayers.Projection("EPSG:4326");
     var latitudeStepSize = (facetHeatmap.maxY - facetHeatmap.minY) / facetHeatmap.rows
     var longitudeStepSize = (facetHeatmap.maxX - facetHeatmap.minX) / facetHeatmap.columns
     var countsArray = facetHeatmap.counts_ints2D;
@@ -67,7 +72,7 @@ SolrHeatmapLayer.prototype.renderHeatmap = function(facetHeatmap, classification
 	    heatmapLayer.addSource(new Heatmap.Source(transformed, cellSize, Math.min(1., value / maxValue)));
 	}
 		   )});
-    heatmapLayer.setOpacity(0.40);
+    heatmapLayer.setOpacity(0.50);
     this.map.addLayer(heatmapLayer);
 };
 		    
@@ -115,7 +120,7 @@ SolrHeatmapLayer.prototype.generateTestData = function(numberOfRows, numberOfCol
     return returnArray;
 };
 		    
-
+// use Jenks classification
 SolrHeatmapLayer.prototype.getClassifications = function(facetHeatmap)
 {
     var flatArray = [];
@@ -170,12 +175,11 @@ SolrHeatmapLayer.prototype.getColorGradient = function(colors, classifications)
     return colorGradient;
 };
 
-
+// Solr response contains an array of name/value pairs, convert to hash
 SolrHeatmapLayer.prototype._solrResponseToObject = function(data)
 {
-    // Solr object is array of name/value pairs, convert to hash
     var heatmap = {};
-    var heatmapArray = data.facet_counts.facet_heatmaps['bbox_rpt'];
+    var heatmapArray = data.facet_counts.facet_heatmaps[this.rptField];
     jQuery.each(heatmapArray, function(index, value) {
 	if ((index % 2) == 0) {
 	    heatmap[heatmapArray[index]] = heatmapArray[index + 1];
@@ -222,3 +226,4 @@ SolrHeatmapLayer.prototype.showHeatmapTest = function(data)
     return heatmapLayer;
 };
 
+ 
