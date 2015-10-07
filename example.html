@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <script src="js/jquery-1.11.0.min.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/openlayers/OpenLayers-2.13.1/OpenLayers.js"></script>
+    <script src="js/HeatmapLayer.js"></script>
+    <script src="js/geostats.js"></script>
+
+    <script src="solrHeatmapLayer.js"></script> 
+
+<script type="text/javascript">
+jQuery(document).ready(function() {console.log('hey');initMap();});
+  
+function initMap()
+{
+    map = new OpenLayers.Map(
+        {
+            div: "map",
+            theme: null,
+            layers: [new OpenLayers.Layer.OSM("OpenStreetMap")],
+            center: new OpenLayers.LonLat(0, 0),
+            zoom: 1
+	});
+    map.events.register("moveend", map, function(){updateHeatmap(map)});
+    map.events.register("zoomend", map, function(){updateHeatmap(map)});
+    //updateHeatmap(map);
+}
+
+function updateHeatmap(map)
+{
+    //SolrHeatmapLayer.fetch(map, "http://worldwidegeoweb.com:8983/solr/kml/select?q*:*", "bbox_rpt");
+    //SolrHeatmapLayer.fetch(map, "http://dev.jdarchive.org:8983/solr/jda/select?q=*:*", "bbox_rpt");
+}
+</script>
+
+
+</head>
+  <body>
+    <h1>Solr Heatmap Layer Example</h1>
+    <div id='map'></div>
+  </body>
+</html>
